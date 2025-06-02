@@ -40,6 +40,13 @@ struct player {
 		dir.z = glm::sin(rotation.x) * glm::cos(rotation.y);
 		return glm::normalize(dir);
 	}
+	glm::vec3 front_xz() {
+		glm::vec3 dir;
+		dir.x = glm::cos(rotation.x);
+		dir.y = 0;
+		dir.z = glm::sin(rotation.x);
+		return glm::normalize(dir);
+	}
 	glm::vec3 up() {
 		return glm::vec3(0, 1, 0);
 	}
@@ -51,7 +58,7 @@ struct player {
 	void move(float delta_time) {
 		if (movement.x == 0 && movement.y == 0 && movement.z == 0) return;
 		glm::vec3 direction = glm::vec3(0);
-		glm::vec3 f = front(), u = up();
+		glm::vec3 f = front_xz(), u = up();
 		glm::vec3 r = glm::normalize(glm::cross(f, u));
 		if (movement.x != 0) direction += (movement.x * 1.f) * f;
 		if (movement.y != 0) direction += (movement.y * 1.f) * r;
