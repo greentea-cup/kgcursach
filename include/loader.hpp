@@ -1,10 +1,6 @@
 // vim: set fdm=indent :
 #ifndef LOADER_HPP
 #define LOADER_HPP
-#include <string>
-#include <optional>
-#include <vector>
-#include <glm/glm.hpp>
 #include <GL/gl.h>
 
 /**
@@ -15,57 +11,38 @@ On error returns false.
 */
 bool load_shader_program(char const *vert_path, char const *frag_path, char const *progname, GLuint *out_program);
 
+/**
+Loads texture from filepath and loads it as gl-texture
+Returns retrieved texure id in out_texture
+Returns true on success, false on error
+Returns false if filepath is null or points to inaccessible file
+*/
 bool load_texture(char const *filepath, GLuint *out_texture);
 
-struct mesh {
-	std::string name;
-	std::string material_lib;
-	std::string material_name;
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals;
+/**
+Loads mesh from data/bojects/<object_resource>.pbj
+and stores it in registry by object.name, retrieved from obj file.
+Additionally loads all corresponding materials and textures.
+Supports limited subset of obj format.
+Specifically, does not support groups, lines,
+faces with more than 4 points.
+*/
+void register_mesh(char const *object_resource);
 
-	static std::optional<mesh> from_obj_file(char const *filepath);
+/**
+Loads material lib from data/materials/<material_lib_resource>
+(it already has .mtl entension in it)
+and stores all materials from it in registry by material.name,
+retrieved from mtl file.
+*/
+void register_materials(char const *material_lib_resource);
 
-	mesh(mesh &&o) :
-		vertices(std::move(o.vertices)),
-		uvs(std::move(o.uvs)),
-		normals(std::move(o.normals)) {}
-
-private:
-	mesh() {}
-};
-
-struct material {
-	std::string name;
-	glm::vec3 ambient = glm::vec3(0);
-	glm::vec3 diffuse = glm::vec3(0);
-	glm::vec3 specular = glm::vec3(0);
-	float specular_highlight = 0;
-	float transparency = 1; // 0 = fully transparent, 1 = fully opaque
-	std::optional<std::string> ambient_texture = {};
-	std::optional<std::string> diffuse_texture = {};
-	std::optional<std::string> specular_texture = {};
-	std::optional<std::string> specular_highlight_texture = {};
-
-	// allows only one material per file
-	static std::optional<material> from_mtl_file(char const *filepath);
-
-	material(material &&o) :
-		name(std::move(o.name)),
-		ambient(std::move(o.ambient)),
-		diffuse(std::move(o.diffuse)),
-		specular(std::move(o.specular)),
-		specular_highlight(std::move(o.specular_highlight)),
-		transparency(std::move(o.transparency)),
-		ambient_texture(std::move(o.ambient_texture)),
-		diffuse_texture(std::move(o.diffuse_texture)),
-		specular_texture(std::move(o.specular_texture)),
-		specular_highlight_texture(std::move(o.specular_highlight_texture))
-	{}
-
-private:
-	material() {}
-};
+/**
+Loads texture from data/textures/<texture_resource>
+(it already has extension too)
+generates gl-texture for it
+and stores it in registry by key texture_resouce
+*/
+void register_texture(char const *texture_resource);
 
 #endif

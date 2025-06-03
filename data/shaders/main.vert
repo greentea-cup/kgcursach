@@ -14,7 +14,7 @@ uniform mat4 view;
 uniform mat4 projection;
 // uniform vec3 light_position_w;
 
-const vec3 light_position_w = vec3(1, 5, 1);
+const vec3 light_position_w = vec3(5, 10, 3);
 
 void main() {
 	gl_Position = projection * view * model * vec4(position_m, 1);

@@ -7,6 +7,8 @@
 #include <stb_image.h>
 #include "util.hpp"
 #include "loader.hpp"
+#include "registry.hpp"
+#include "object.hpp"
 
 bool load_shader_program(char const *vert_path, char const *frag_path, char const *progname, GLuint *out_program) {
 	if (out_program == nullptr) return false;
@@ -61,37 +63,39 @@ bool load_shader_program(char const *vert_path, char const *frag_path, char cons
 
 bool load_texture(char const *filepath, GLuint *out_texture) {
 	int width, height, channels;
+	stbi_set_flip_vertically_on_load(1);
 	unsigned char *data = stbi_load(filepath, &width, &height, &channels, 4);
-	if (data == NULL) return false;
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	if (data == NULL) { return false; }
 	GLuint tex;
 	glGenTextures(1, &tex);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	stbi_image_free(data);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	*out_texture = tex;
 	return true;
 }
 
-std::optional<mesh> mesh::from_obj_file(char const *filepath) {
-	if (filepath == nullptr) return {};
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading mesh from %s\n", filepath);
-	std::ifstream fp(filepath);
-	if (!fp.is_open()) return {};
+void register_mesh(char const *object_resource) {
+	if (object_resource == nullptr) return;
+	char path[256];
+	snprintf(path, sizeof(path), "data/objects/%s.obj", object_resource);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading mesh from %s\n", path);
+	std::ifstream fp(path);
+	if (!fp.is_open()) return;
 	mesh res;
 	std::vector<glm::vec3> vertices, face_vertices;
 	std::vector<glm::vec2> uvs, face_uvs;
 	std::vector<glm::vec3> normals, face_normals;
-	// push index 0 params because indexing in faces starts from 1
-	// and i don't bother subtracting
-	vertices.push_back(glm::vec3(0, 0, 0));
-	uvs.push_back(glm::vec2(0, 0));
-	normals.push_back(glm::vec3(0, 0, 0));
+	// // push index 0 params because indexing in faces starts from 1
+	// // and i don't bother subtracting
+	// vertices.push_back(glm::vec3(0));
+	// uvs.push_back(glm::vec2(0));
+	// normals.push_back(glm::vec3(0));
 	char line[1024];
 	std::vector<size_t> tmp;
 	tmp.reserve(64);
@@ -100,9 +104,8 @@ std::optional<mesh> mesh::from_obj_file(char const *filepath) {
 		if (fp.eof()) break;
 		if (line[0] == '#') /* comment */ continue;
 		else if (!strncmp("mtllib ", line, 7)) {
-			char path[1024];
-			snprintf(path, sizeof(path), "data/materials/%s", line + 7);
-			res.material_lib = std::string(path);
+			res.material_lib = std::string(line + 7);
+			register_materials(line + 7);
 		}
 		else if (!strncmp("o ", line, 2)) {
 			res.name = std::string(line + 2);
@@ -123,35 +126,38 @@ std::optional<mesh> mesh::from_obj_file(char const *filepath) {
 			// only x y z coords
 			glm::vec3 vn;
 			sscanf(line, "v %f %f %f", &vn.x, &vn.y, &vn.z);
-			vertices.push_back(vn);
+			normals.push_back(vn);
 		}
 		else if (!strncmp("usemtl ", line, 7)) {
+			// corresponding material shuld alredy be loaded
+			// and stored in registry
 			res.material_name = std::string(line + 7);
 		}
 		else if (!strncmp("f ", line, 2)) {
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "face: '%s'\n", line);
+			SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "face: '%s'\n", line);
 			// only 3 or 4 vertices allowed
 			// partially-filled data not allowed
 			// triangle is 0,1,2
 			// quad is 0,1,2 + 0,2,3 (triangles)
 			tmp.clear();
+			tmp.reserve(12);
 			ssize_t len = (ssize_t)strlen(line);
 			char const *l = line + 2;
 			while (l - line < len) {
 				uint x = 0; while (l[x] != ' ' && l[x] != '\n' && l[x] != '\0') x++;
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "entry len %u (%.*s)\n", x, x, l);
+				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "entry len %u (%.*s)\n", x, x, l);
 				if (x == 0) break;
 				uint y1 = 0; while (l[y1] != '/') y1++;
 				uint y2 = y1 + 1; while (l[y2] != '/') y2++;
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "entry splits at %u %u\n", y1, y2);
-				size_t v = 0, vt = 0, vn = 0;
+				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "entry splits at %u %u\n", y1, y2);
+				size_t v = 1, vt = 1, vn = 0;
 				(void)sscanf(l, "%zu", &v);
 				if (y1 > 0) (void)sscanf(l + y1 + 1, "%zu", &vt);
 				if (y2 > y1+1) (void)sscanf(l + y2 + 1, "%zu", &vn);
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "entry values %zu %zu %zu\n", v, vt, vn);
-				tmp.push_back(v);
-				tmp.push_back(vt);
-				tmp.push_back(vn);
+				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "entry values %zu %zu %zu\n", v, vt, vn);
+				tmp.push_back(v-1);
+				tmp.push_back(vt-1);
+				tmp.push_back(vn-1);
 				l += x + 1;
 			}
 			switch (tmp.size()) {
@@ -170,7 +176,6 @@ std::optional<mesh> mesh::from_obj_file(char const *filepath) {
 					face_normals.push_back(normals[tmp[8]]);
 				} break;
 				case 12: /* quad 0,1,2 + 0,2,3 */ {
-					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "verts %zu %zu %zu %zu\n", tmp[0], tmp[3], tmp[6], tmp[9]);
 					face_vertices.push_back(vertices[tmp[0]]);
 					face_vertices.push_back(vertices[tmp[3]]);
 					face_vertices.push_back(vertices[tmp[6]]);
@@ -199,22 +204,41 @@ std::optional<mesh> mesh::from_obj_file(char const *filepath) {
 	res.uvs = std::move(face_uvs);
 	res.normals = std::move(face_normals);
 	fp.close();
-	return res;
+	std::string objname(res.name);
+	auto it = meshes.find(objname);
+	// delete mesh in case it is already loaded
+	// probably better do this than just override
+	if (it != meshes.end()) meshes.erase(it);
+	meshes.insert(it, {objname, std::move(res)});
 }
 
-std::optional<material> material::from_mtl_file(char const *filepath) {
-	if (filepath == nullptr) return {};
+void register_materials(char const *material_lib_resource) {
+	if (material_lib_resource == nullptr) return;
+	char filepath[256];
+	// .mtl is already included in obj file
+	snprintf(filepath, sizeof(filepath), "data/materials/%s", material_lib_resource);
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading material from %s\n", filepath);
 	std::ifstream fp(filepath);
-	if (!fp.is_open()) return {};
+	if (!fp.is_open()) return;
 	material res;
 	char line[1024];
+	bool first_material = true;
 	while (1) {
 		fp.getline(line, sizeof(line));
 		if (fp.eof()) break;
 		if (line[0] == '#') /* comment */ continue;
 		else if (!strncmp("newmtl ", line, 7)) {
-			res.name = std::string(line + 7);
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Started filling material %s\n", line + 7);
+			if (first_material) {
+				first_material = false;
+				res.name = std::string(line + 7);
+			}
+			else {
+				std::string name(res.name);
+				materials.insert({name, std::move(res)});
+				res = material{}; // start with new material
+				res.name = std::string(line + 7);
+			}
 		}
 		else if (!strncmp("Ka ", line, 3)) {
 			glm::vec3 Ka;
@@ -248,17 +272,55 @@ std::optional<material> material::from_mtl_file(char const *filepath) {
 		}
 		else if (!strncmp("map_Ka ", line, 7)) {
 			res.ambient_texture = std::string(line + 7);
+			auto it = textures.find(res.ambient_texture.value());
+			if (it == textures.end()) {
+				register_texture(line + 7);
+			}
 		}
 		else if (!strncmp("map_Kd ", line, 7)) {
 			res.diffuse_texture = std::string(line + 7);
+			auto it = textures.find(res.diffuse_texture.value());
+			if (it == textures.end()) {
+				register_texture(line + 7);
+			}
 		}
 		else if (!strncmp("map_Ks ", line, 7)) {
 			res.specular_texture = std::string(line + 7);
+			auto it = textures.find(res.specular_texture.value());
+			if (it == textures.end()) {
+				register_texture(line + 7);
+			}
 		}
 		else if (!strncmp("map_Ns ", line, 7)) {
 			res.specular_highlight_texture = std::string(line + 7);
+			auto it = textures.find(res.specular_highlight_texture.value());
+			if (it == textures.end()) {
+				register_texture(line + 7);
+			}
 		}
 	}
+	// Add last material
+	std::string name(res.name);
+	materials.insert({name, std::move(res)});
 	fp.close();
-	return res;
 }
+void register_texture(char const *texture_name) {
+	char filepath[256];
+	// mtllib has exteinsion too, obviously
+	snprintf(filepath, sizeof(filepath), "data/textures/%s", texture_name);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading texture from %s\n", filepath);
+	GLuint tex;
+	if (load_texture(filepath, &tex)) {
+		auto it = textures.find(texture_name);
+		// dlete old texture in case
+		if (it != textures.end()) {
+			glDeleteTextures(1, &it->second);
+		}
+		textures.insert(it, {texture_name, tex});
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Successfully loaded texture '%s'\n", texture_name);
+	}
+	else {
+		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Error while loading texture\n");
+	}
+}
+

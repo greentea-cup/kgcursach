@@ -16,6 +16,8 @@ CXXFLAGS += -isystem ./stb_image
 # CXXFLAGS += -isystem ./glew
 # LDFLAGS += -L
 
+# CXXFLAGS += -fsanitize=address -g
+
 INCDIR=include
 SRCDIR=src
 BUILDDIR=build
