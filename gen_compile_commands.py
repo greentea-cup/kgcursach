@@ -11,7 +11,10 @@ result = []
 for cmd in make_commands:
     if cmd.startswith(known_compilers) and ('.cpp' in cmd or '.c' in cmd):
         sources = find_source.findall(cmd)
-        out = find_out.findall(cmd)[0]
+        outs = find_out.findall(cmd)
+        if not outs:
+            continue
+        out = outs[0]
         for src in sources:
             result.append({'directory': '.', 'command': cmd, 'file': src, "output": out})
 

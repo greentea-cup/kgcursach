@@ -6,7 +6,6 @@ GPPFLAGS =
 CXXFLAGS = -O2 -Wall -Wextra -Werror -DNDEBUG -std=c++17
 LDFLAGS =
 LDLIBS = -lm -lSDL2 -lGL -lGLEW
-RM = rm -rf
 
 CXXFLAGS += -isystem /usr/include/SDL2
 CXXFLAGS += -isystem /usr/include/GL
@@ -21,28 +20,27 @@ CXXFLAGS += -isystem ./stb_image
 INCDIR=include
 SRCDIR=src
 BUILDDIR=build
-OBJDIR=$(BUILDDIR)/obj
 
 SRCS = $(wildcard $(SRCDIR)/*.cpp)
-OBJS = $(addprefix $(OBJDIR)/,$(notdir $(patsubst %.cpp,%.o,$(SRCS))))
+OBJS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SRCS))
+DEPS = $(patsubst %.o,%.d,$(OBJS))
 
 .PHONY: all clean distclean cleandeps
 
 all: regendeps $(BUILDDIR)/app compile_commands.json
 
-$(OBJS): $(OBJDIR)/%.o: $(SRCDIR)/%.cpp Makefile
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -I$(INCDIR) $< -o $@
+$(OBJS): $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp Makefile
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -I$(INCDIR) -MMD $< -o $@
 
-$(OBJS): | $(OBJDIR)
+-include $(DEPS)
+
+$(OBJS): | $(BUILDDIR)
 
 $(BUILDDIR)/app: $(OBJS) | $(BUILDDIR)
 	$(LINK.cc) $^ $(LDLIBS) -o $@
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
-
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
 
 compile_commands.json: Makefile
 	python3 gen_compile_commands.py
@@ -59,10 +57,10 @@ glm:
 # 	$(RM) -r glew/.git
 
 cleandeps:
-	$(RM) glm
+	$(RM) -r glm
 
 clean:
-	$(RM) $(OBJDIR)
+	$(RM) $(OBJS) $(DEPS)
 
 distclean: clean
-	$(RM) $BUILDDIR)
+	$(RM) -r $(BUILDDIR)
