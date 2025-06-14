@@ -51,7 +51,7 @@ void mainloop(SDL_Window *window) {
 	SDL_Event event;
 	bool running = true, captured = true;
 
-	player player;
+	player player{};
 
 	glm::mat4 view;
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);

@@ -50,7 +50,7 @@ regendeps: glm
 glm:
 	git clone --depth 1 --single-branch --branch 1.0.1 -- https://github.com/g-truc/glm.git glm
 	# Я знаю про sparse/partial clone и знаю, что он появился только недавно. А rm работает всегда
-	$(RM) glm/.git glm/.github glm/test glm/doc glm/cmake glm/CMakeLists.txt glm/glm/CMakeLists.txt glm/util glm/readme.md glm/manual.md
+	$(RM) -r glm/.git glm/.github glm/test glm/doc glm/cmake glm/CMakeLists.txt glm/glm/CMakeLists.txt glm/util glm/readme.md glm/manual.md
 
 # glew:
 # 	git clone --depth 1 --single-branch --branch glew-2.2.0 -- https://github.com/nigels-com/glew.git glew
@@ -64,3 +64,4 @@ clean:
 
 distclean: clean
 	$(RM) -r $(BUILDDIR)
+

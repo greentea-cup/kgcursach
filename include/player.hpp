@@ -12,7 +12,7 @@ struct player {
 	// x = yaw (rad), y = pitch (rad)
 	glm::vec2 rotation = glm::vec2(0, 0);
 	glm::ivec3 movement = glm::ivec3(0, 0, 0);;
-	float speed = 0.10f;
+	float speed = 2.5f;
 
 	glm::vec3 front();
 	glm::vec3 front_xz();

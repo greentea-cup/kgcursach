@@ -33,5 +33,5 @@ void player::move(float delta_time) {
 	if (movement.x != 0) direction += (movement.x * 1.f) * f;
 	if (movement.y != 0) direction += (movement.y * 1.f) * r;
 	if (movement.z != 0) direction += (movement.z * 1.f) * u;
-	position += glm::normalize(direction) * delta_time;
+	position += glm::normalize(direction) * speed * delta_time;
 }
