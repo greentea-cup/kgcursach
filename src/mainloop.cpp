@@ -21,12 +21,12 @@ void mainloop(SDL_Window *window) {
 	object objects[] = {
 		{"Dice"}, {"Box"}, {"Dice"}, {"Dice"}
 	};
+	size_t objects_len = sizeof(objects) / sizeof(*objects);
 	objects[1].transform.position = glm::vec3(2.3, 0.3, 0.1);
 	objects[1].transform.rotation = glm::quat(
 		glm::vec3(glm::radians(10.0f), 0, glm::radians(10.0f)));
 	objects[2].transform.position = glm::vec3(2, 0, 3);
 	objects[3].transform.position = glm::vec3(-2.5, 0, -1);
-	size_t objects_len = sizeof(objects) / sizeof(*objects);
 	for (size_t i = 0; i < objects_len; i++) {
 		objects[i].mesh().prepare_to_drawing();
 	}
@@ -56,6 +56,7 @@ void mainloop(SDL_Window *window) {
 	player player{};
 	double default_speed = player.speed;
 	double sprint_speed = default_speed * 3.0;
+	bool is_sprinting = false;
 
 	glm::mat4 view;
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
@@ -103,7 +104,10 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_D: player.movement.y += 1; break;
 					case SDL_SCANCODE_SPACE: player.movement.z += 1; break;
 					case SDL_SCANCODE_LSHIFT: player.movement.z -= 1; break;
-					case SDL_SCANCODE_TAB: player.speed = sprint_speed; break;
+					case SDL_SCANCODE_TAB: {
+						is_sprinting = !is_sprinting;
+						player.speed = is_sprinting ? sprint_speed : default_speed;
+					} break;
 				}
 			} break;
 			case SDL_KEYUP: {
@@ -119,7 +123,6 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_D: player.movement.y -= 1; break;
 					case SDL_SCANCODE_SPACE: player.movement.z -= 1; break;
 					case SDL_SCANCODE_LSHIFT: player.movement.z += 1; break;
-					case SDL_SCANCODE_TAB: player.speed = default_speed; break;
 				}
 			} break;
 			case SDL_MOUSEMOTION: if (captured) {
@@ -135,11 +138,22 @@ void mainloop(SDL_Window *window) {
 			} break;
 		}
 		player.move(delta_time);
+		bool inside_trigger;
+		{
+			glm::vec3 p = player.position;
+			// пока так
+			glm::vec3 origin = glm::vec3(1,1,1), end = glm::vec3(2,2,2);
+			bool in_x = (p.x >= origin.x && p.x <= end.x);
+			bool in_y = (p.y >= origin.y && p.y <= end.y);
+			bool in_z = (p.z >= origin.z && p.z <= end.z);
+			inside_trigger = in_x && in_y && in_z;
+		}
 
 		// SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "position x y z: %.2f %.2f %.2f\nrotation yaw pitch: %.2f %.2f\n", player.position.x, player.position.y, player.position.z, player.rotation.x, player.rotation.y);
 		snprintf(
 			window_title, sizeof(window_title),
-			"position: %.2f %.2f %.2f | rotation: %.2f %.2f",
+			"%sposition: %.2f %.2f %.2f | rotation: %.2f %.2f",
+			inside_trigger ? "[Target] " : "",
 			player.position.x, player.position.y, player.position.z,
 			player.rotation.x, player.rotation.y
 		);
@@ -147,7 +161,8 @@ void mainloop(SDL_Window *window) {
 
 		view = glm::lookAt(player.position, player.position + player.front(), player.up());
 
-		glEnable(GL_CULL_FACE);
+		// glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glClearColor(0.1, 0.1, 0.1, 1.0);
