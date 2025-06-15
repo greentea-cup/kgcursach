@@ -17,6 +17,7 @@ void mainloop(SDL_Window *window) {
 	register_mesh("dice");
 	register_mesh("box");
 
+	// load scene
 	object objects[] = {
 		{"Dice"}, {"Box"}, {"Dice"}, {"Dice"}
 	};
@@ -29,6 +30,7 @@ void mainloop(SDL_Window *window) {
 	for (size_t i = 0; i < objects_len; i++) {
 		objects[i].mesh().prepare_to_drawing();
 	}
+	// end load scene
 
 	// init
 	int width, height; float aspectRatio;
@@ -65,72 +67,71 @@ void mainloop(SDL_Window *window) {
 			delta_time = (time_now - time_last) * 0.001; // ms to s
 			time_last = time_now;
 		}
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
+		while (SDL_PollEvent(&event)) switch (event.type) {
+			default: break;
+			case SDL_QUIT: running = false; break;
+			case SDL_WINDOWEVENT:
+			switch (event.window.event) {
 				default: break;
-				case SDL_QUIT: running = false; break;
-				case SDL_WINDOWEVENT:
-				switch (event.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED: {
+					width = event.window.data1;
+					height = event.window.data2;
+					aspectRatio = (float)width / (float)height;
+					proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
+					glViewport(0, 0, width, height);
+					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window resized to %d %d\n", width, height);
+				} break;
+			} break;
+			case SDL_KEYDOWN: if (!event.key.repeat) {
+				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION,
+					"Keydown scancode %s keycode %s\n",
+					SDL_GetScancodeName(event.key.keysym.scancode),
+					SDL_GetKeyName(event.key.keysym.sym));
+				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+					SDL_WarpMouseInWindow(window, width / 2, height / 2);
+					captured = !captured;
+					SDL_SetRelativeMouseMode((SDL_bool)captured);
+					if (!captured) { player.movement = glm::ivec3(0); }
+				}
+				if (captured) switch (event.key.keysym.scancode) {
 					default: break;
-					case SDL_WINDOWEVENT_SIZE_CHANGED: {
-						width = event.window.data1;
-						height = event.window.data2;
-						aspectRatio = (float)width / (float)height;
-						proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
-						glViewport(0, 0, width, height);
-						SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Window resized to %d %d\n", width, height);
-					} break;
-				} break;
-				case SDL_KEYDOWN: if (!event.key.repeat) {
-					SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION,
-				  		"Keydown scancode %s keycode %s\n",
-						SDL_GetScancodeName(event.key.keysym.scancode),
-				  		SDL_GetKeyName(event.key.keysym.sym));
-					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-						SDL_WarpMouseInWindow(window, width / 2, height / 2);
-						captured = !captured;
-						SDL_SetRelativeMouseMode((SDL_bool)captured);
-						if (!captured) { player.movement = glm::ivec3(0); }
-					}
-					if (captured) switch (event.key.keysym.scancode) {
-						default: break;
-						case SDL_SCANCODE_W: player.movement.x += 1; break;
-						case SDL_SCANCODE_S: player.movement.x -= 1; break;
-						case SDL_SCANCODE_A: player.movement.y -= 1; break;
-						case SDL_SCANCODE_D: player.movement.y += 1; break;
-						case SDL_SCANCODE_SPACE: player.movement.z += 1; break;
-						case SDL_SCANCODE_LSHIFT: player.movement.z -= 1; break;
-					}
-				} break;
-				case SDL_KEYUP: {
-					SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION,
-				  		"Keyup scancode %s keycode %s\n",
-						SDL_GetScancodeName(event.key.keysym.scancode),
-				  		SDL_GetKeyName(event.key.keysym.sym));
-					if (captured) switch (event.key.keysym.scancode) {
-						default: break;
-						case SDL_SCANCODE_W: player.movement.x -= 1; break;
-						case SDL_SCANCODE_S: player.movement.x += 1; break;
-						case SDL_SCANCODE_A: player.movement.y += 1; break;
-						case SDL_SCANCODE_D: player.movement.y -= 1; break;
-						case SDL_SCANCODE_SPACE: player.movement.z -= 1; break;
-						case SDL_SCANCODE_LSHIFT: player.movement.z += 1; break;
-					}
-				} break;
-				case SDL_MOUSEMOTION: if (captured) {
-					float dx = event.motion.xrel;
-					float dy = -event.motion.yrel; // change y direction
-					player.rotate_camera(dx, dy);
-				} break;
-				case SDL_DROPFILE: {
-					char *filename = event.drop.file;
-					SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "File '%s' dropped\n", filename);
-					// здесь буду грузить объекты если что (2025-05-30 16:03 UTC+0300)
-					SDL_free(filename);
-				} break;
-			}
+					case SDL_SCANCODE_W: player.movement.x += 1; break;
+					case SDL_SCANCODE_S: player.movement.x -= 1; break;
+					case SDL_SCANCODE_A: player.movement.y -= 1; break;
+					case SDL_SCANCODE_D: player.movement.y += 1; break;
+					case SDL_SCANCODE_SPACE: player.movement.z += 1; break;
+					case SDL_SCANCODE_LSHIFT: player.movement.z -= 1; break;
+				}
+			} break;
+			case SDL_KEYUP: {
+				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION,
+					"Keyup scancode %s keycode %s\n",
+					SDL_GetScancodeName(event.key.keysym.scancode),
+					SDL_GetKeyName(event.key.keysym.sym));
+				if (captured) switch (event.key.keysym.scancode) {
+					default: break;
+					case SDL_SCANCODE_W: player.movement.x -= 1; break;
+					case SDL_SCANCODE_S: player.movement.x += 1; break;
+					case SDL_SCANCODE_A: player.movement.y += 1; break;
+					case SDL_SCANCODE_D: player.movement.y -= 1; break;
+					case SDL_SCANCODE_SPACE: player.movement.z -= 1; break;
+					case SDL_SCANCODE_LSHIFT: player.movement.z += 1; break;
+				}
+			} break;
+			case SDL_MOUSEMOTION: if (captured) {
+				float dx = event.motion.xrel;
+				float dy = -event.motion.yrel; // change y direction
+				player.rotate_camera(dx, dy);
+			} break;
+			case SDL_DROPFILE: {
+				char *filename = event.drop.file;
+				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "File '%s' dropped\n", filename);
+				// здесь буду грузить объекты если что (2025-05-30 16:03 UTC+0300)
+				SDL_free(filename);
+			} break;
 		}
 		player.move(delta_time);
+
 		// SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "position x y z: %.2f %.2f %.2f\nrotation yaw pitch: %.2f %.2f\n", player.position.x, player.position.y, player.position.z, player.rotation.x, player.rotation.y);
 		snprintf(
 			window_title, sizeof(window_title),
@@ -147,7 +148,7 @@ void mainloop(SDL_Window *window) {
 		glDepthFunc(GL_LESS);
 		glClearColor(0.1, 0.1, 0.1, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+		
 		for (size_t i = 0; i < objects_len; i++) {
 			object &o = objects[i];
 			glUseProgram(main_prog);
