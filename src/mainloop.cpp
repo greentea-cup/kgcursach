@@ -54,6 +54,8 @@ void mainloop(SDL_Window *window) {
 	bool running = true, captured = true;
 
 	player player{};
+	double default_speed = player.speed;
+	double sprint_speed = default_speed * 3.0;
 
 	glm::mat4 view;
 	glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspectRatio, 0.1f, 100.0f);
@@ -101,6 +103,7 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_D: player.movement.y += 1; break;
 					case SDL_SCANCODE_SPACE: player.movement.z += 1; break;
 					case SDL_SCANCODE_LSHIFT: player.movement.z -= 1; break;
+					case SDL_SCANCODE_TAB: player.speed = sprint_speed; break;
 				}
 			} break;
 			case SDL_KEYUP: {
@@ -116,6 +119,7 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_D: player.movement.y -= 1; break;
 					case SDL_SCANCODE_SPACE: player.movement.z -= 1; break;
 					case SDL_SCANCODE_LSHIFT: player.movement.z += 1; break;
+					case SDL_SCANCODE_TAB: player.speed = default_speed; break;
 				}
 			} break;
 			case SDL_MOUSEMOTION: if (captured) {
