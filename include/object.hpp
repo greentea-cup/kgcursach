@@ -13,14 +13,16 @@ struct mesh {
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec3> tangents = {};
 	size_t size() { return vertices.size() * 3; /* 3 floats in each glm::vec3 */ };
 	bool has_material();
 	/**
 	TODO: возвращать какой-нибуть материал-заглушку.
 	*/
 	struct material &material();
-	GLuint vao = 0, vertices_buf = 0, uvs_buf = 0, normals_buf = 0;
+	GLuint vao = 0, vertices_buf = 0, uvs_buf = 0, normals_buf = 0, tangents_buf = 0;
 	bool prepare_to_drawing();
+	void gen_tbn();
 };
 
 struct material {
@@ -29,11 +31,13 @@ struct material {
 	glm::vec3 diffuse = glm::vec3(0);
 	glm::vec3 specular = glm::vec3(0);
 	float specular_highlight = 0;
-	float transparency = 1; // 0 = fully transparent, 1 = fully opaque
+	float alpha = 1; // 0 = fully transparent, 1 = fully opaque
 	std::optional<std::string> ambient_texture = {};
 	std::optional<std::string> diffuse_texture = {};
 	std::optional<std::string> specular_texture = {};
 	std::optional<std::string> specular_highlight_texture = {};
+	std::optional<std::string> normal_texture = {};
+	bool is_transparent = 0;
 };
 
 struct object {

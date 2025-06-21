@@ -91,11 +91,6 @@ void register_mesh(char const *object_resource) {
 	std::vector<glm::vec3> vertices, face_vertices;
 	std::vector<glm::vec2> uvs, face_uvs;
 	std::vector<glm::vec3> normals, face_normals;
-	// // push index 0 params because indexing in faces starts from 1
-	// // and i don't bother subtracting
-	// vertices.push_back(glm::vec3(0));
-	// uvs.push_back(glm::vec2(0));
-	// normals.push_back(glm::vec3(0));
 	char line[1024];
 	std::vector<size_t> tmp;
 	tmp.reserve(64);
@@ -125,13 +120,16 @@ void register_mesh(char const *object_resource) {
 		else if (!strncmp("vn ", line, 3)) {
 			// only x y z coords
 			glm::vec3 vn;
-			sscanf(line, "v %f %f %f", &vn.x, &vn.y, &vn.z);
+			sscanf(line, "vn %f %f %f", &vn.x, &vn.y, &vn.z);
 			normals.push_back(vn);
 		}
 		else if (!strncmp("usemtl ", line, 7)) {
 			// corresponding material shuld alredy be loaded
 			// and stored in registry
 			res.material_name = std::string(line + 7);
+			if (materials.find(res.material_name) == materials.end()) {
+				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Material %s not found\n", line + 7);
+			}
 		}
 		else if (!strncmp("f ", line, 2)) {
 			SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "face: '%s'\n", line);
@@ -263,12 +261,14 @@ void register_materials(char const *material_lib_resource) {
 		else if (!strncmp("d ", line, 2)) {
 			float d;
 			sscanf(line, "d %f", &d);
-			res.transparency = d;
+			res.alpha = d;
+			if (d < 1.) res.is_transparent = true;
 		}
 		else if (!strncmp("Tr ", line, 3)) {
 			float Tr;
 			sscanf(line, "Tr %f", &Tr);
-			res.transparency = 1 - Tr;
+			res.alpha = 1 - Tr;
+			if (Tr > 0.) res.is_transparent = true;
 		}
 		else if (!strncmp("map_Ka ", line, 7)) {
 			res.ambient_texture = std::string(line + 7);
@@ -298,6 +298,20 @@ void register_materials(char const *material_lib_resource) {
 				register_texture(line + 7);
 			}
 		}
+		else if (!strncmp("map_Bump ", line, 9) || !strncmp("map_bump ", line, 9))  {
+			res.normal_texture = std::string(line + 9);
+			auto it = textures.find(res.normal_texture.value());
+			if (it == textures.end()) {
+				register_texture(line + 9);
+			}
+		}
+		else if (!strncmp("bump ", line, 5) || !strncmp("Bump ", line, 5)) {
+			res.normal_texture = std::string(line + 5);
+			auto it = textures.find(res.normal_texture.value());
+			if (it == textures.end()) {
+				register_texture(line + 5);
+			}
+		}
 	}
 	// Add last material
 	std::string name(res.name);
@@ -306,13 +320,13 @@ void register_materials(char const *material_lib_resource) {
 }
 void register_texture(char const *texture_name) {
 	char filepath[256];
-	// mtllib has exteinsion too, obviously
+	// mtllib has extension too, obviously
 	snprintf(filepath, sizeof(filepath), "data/textures/%s", texture_name);
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading texture from %s\n", filepath);
 	GLuint tex;
 	if (load_texture(filepath, &tex)) {
 		auto it = textures.find(texture_name);
-		// dlete old texture in case
+		// delete old texture in case
 		if (it != textures.end()) {
 			glDeleteTextures(1, &it->second);
 		}

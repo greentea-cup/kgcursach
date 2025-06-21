@@ -32,3 +32,6 @@ Windows:
 - Отрисовка интерфейса, прозрачные объекты
 - Третья лаба
 - Четвёртая лаба
+
+### Credits:
+- https://polyhaven.com/a/stone_brick_wall_001
