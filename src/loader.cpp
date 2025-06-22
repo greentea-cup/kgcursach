@@ -1,7 +1,7 @@
 // vim: set fdm=indent :
 #include <fstream>
 #include <GL/glew.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <stb_image.h>
@@ -271,45 +271,45 @@ void register_materials(char const *material_lib_resource) {
 			if (Tr > 0.) res.is_transparent = true;
 		}
 		else if (!strncmp("map_Ka ", line, 7)) {
-			res.ambient_texture = std::string(line + 7);
-			auto it = textures.find(res.ambient_texture.value());
+			res.ambient_texpath = std::string(line + 7);
+			auto it = textures.find(res.ambient_texpath.value());
 			if (it == textures.end()) {
-				register_texture(line + 7);
+				res.ambient_texture = register_texture(line + 7);
 			}
 		}
 		else if (!strncmp("map_Kd ", line, 7)) {
-			res.diffuse_texture = std::string(line + 7);
-			auto it = textures.find(res.diffuse_texture.value());
+			res.diffuse_texpath = std::string(line + 7);
+			auto it = textures.find(res.diffuse_texpath.value());
 			if (it == textures.end()) {
-				register_texture(line + 7);
+				res.diffuse_texture = register_texture(line + 7);
 			}
 		}
 		else if (!strncmp("map_Ks ", line, 7)) {
-			res.specular_texture = std::string(line + 7);
-			auto it = textures.find(res.specular_texture.value());
+			res.specular_texpath = std::string(line + 7);
+			auto it = textures.find(res.specular_texpath.value());
 			if (it == textures.end()) {
-				register_texture(line + 7);
+				res.specular_highlight_texture = register_texture(line + 7);
 			}
 		}
 		else if (!strncmp("map_Ns ", line, 7)) {
-			res.specular_highlight_texture = std::string(line + 7);
-			auto it = textures.find(res.specular_highlight_texture.value());
+			res.specular_highlight_texpath = std::string(line + 7);
+			auto it = textures.find(res.specular_highlight_texpath.value());
 			if (it == textures.end()) {
-				register_texture(line + 7);
+				res.specular_highlight_texture = register_texture(line + 7);
 			}
 		}
 		else if (!strncmp("map_Bump ", line, 9) || !strncmp("map_bump ", line, 9))  {
-			res.normal_texture = std::string(line + 9);
-			auto it = textures.find(res.normal_texture.value());
+			res.normal_texpath = std::string(line + 9);
+			auto it = textures.find(res.normal_texpath.value());
 			if (it == textures.end()) {
-				register_texture(line + 9);
+				res.normal_texture = register_texture(line + 9);
 			}
 		}
 		else if (!strncmp("bump ", line, 5) || !strncmp("Bump ", line, 5)) {
-			res.normal_texture = std::string(line + 5);
-			auto it = textures.find(res.normal_texture.value());
+			res.normal_texpath = std::string(line + 5);
+			auto it = textures.find(res.normal_texpath.value());
 			if (it == textures.end()) {
-				register_texture(line + 5);
+				res.normal_texture = register_texture(line + 5);
 			}
 		}
 	}
@@ -318,7 +318,7 @@ void register_materials(char const *material_lib_resource) {
 	materials.insert({name, std::move(res)});
 	fp.close();
 }
-void register_texture(char const *texture_name) {
+std::optional<GLuint> register_texture(char const *texture_name) {
 	char filepath[256];
 	// mtllib has extension too, obviously
 	snprintf(filepath, sizeof(filepath), "data/textures/%s", texture_name);
@@ -332,9 +332,11 @@ void register_texture(char const *texture_name) {
 		}
 		textures.insert(it, {texture_name, tex});
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Successfully loaded texture '%s'\n", texture_name);
+		return tex;
 	}
 	else {
 		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Error while loading texture\n");
+		return {};
 	}
 }
 

@@ -32,12 +32,17 @@ struct material {
 	glm::vec3 specular = glm::vec3(0);
 	float specular_highlight = 0;
 	float alpha = 1; // 0 = fully transparent, 1 = fully opaque
-	std::optional<std::string> ambient_texture = {};
-	std::optional<std::string> diffuse_texture = {};
-	std::optional<std::string> specular_texture = {};
-	std::optional<std::string> specular_highlight_texture = {};
-	std::optional<std::string> normal_texture = {};
+	std::optional<std::string> ambient_texpath = {};
+	std::optional<std::string> diffuse_texpath = {};
+	std::optional<std::string> specular_texpath = {};
+	std::optional<std::string> specular_highlight_texpath = {};
+	std::optional<std::string> normal_texpath = {};
 	bool is_transparent = 0;
+	std::optional<GLuint> ambient_texture = {};
+	std::optional<GLuint> diffuse_texture = {};
+	std::optional<GLuint> specular_texture = {};
+	std::optional<GLuint> specular_highlight_texture = {};
+	std::optional<GLuint> normal_texture = {};
 };
 
 struct object {

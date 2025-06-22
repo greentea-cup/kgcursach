@@ -1,6 +1,6 @@
 // vim: set fdm=indent :
 #include <GL/glew.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #ifdef _WIN32
 	#include <Windows.h>
 #endif

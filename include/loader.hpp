@@ -1,6 +1,7 @@
 // vim: set fdm=indent :
 #ifndef LOADER_HPP
 #define LOADER_HPP
+#include <optional>
 #include <GL/gl.h>
 
 /**
@@ -43,6 +44,6 @@ Loads texture from data/textures/<texture_resource>
 generates gl-texture for it
 and stores it in registry by key texture_resouce
 */
-void register_texture(char const *texture_resource);
+std::optional<GLuint> register_texture(char const *texture_resource);
 
 #endif
