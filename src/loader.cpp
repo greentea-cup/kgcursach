@@ -104,6 +104,7 @@ void register_mesh(char const *object_resource) {
 		}
 		else if (!strncmp("o ", line, 2)) {
 			res.name = std::string(line + 2);
+			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Loading object %s\n", res.name.c_str());
 		}
 		else if (!strncmp("v ", line, 2)) {
 			// only x y z coords

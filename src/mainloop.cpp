@@ -18,32 +18,45 @@ void mainloop(SDL_Window *window) {
 	register_mesh("dice");
 	register_mesh("box");
 	register_mesh("dungeon_wall");
+	register_mesh("dungeon_2");
+	register_mesh("campfire_plate");
+	register_mesh("campfire_log");
+	register_mesh("campfire_fire");
 	
 	// load scene
 	object objects[] = {
-		{"Box"}, {"Wall"}, {"Wall"}, {"Wall"}, {"Wall"}, {"Wall"}, {"Dice"}, {"Dice"}, {"Dice"}, {"Dice"}, {"Dice"}, {"Dice"}
+		{"Box"}, {"Wall"}, {"Wall"}, {"Wall"}, {"Wall"}, {"Wall"}, {"Dice"}, {"Dice"}, {"Dice"}, {"Dice"}, {"Dice"}, {"Dice"},
+		{"Dungeon"}, {"CampfirePlate"}, {"CampfireLog"}, {"CampfireFire"}
 	};
+	object &campfire_fire = objects[15];
 	size_t objects_len = sizeof(objects) / sizeof(*objects);
+	objects[0].transform.set_position(glm::vec3(20, 1, 0));
 	objects[0].transform.set_scale(glm::vec3(0.1));
-	objects[1].transform.set_position(glm::vec3(0, -1, 0));
+	objects[1].transform.set_position(glm::vec3(20, 0, 0));
 	objects[1].transform.set_scale(glm::vec3(10));
-	objects[2].transform.set_position(glm::vec3(0, 0, -5));
+	objects[2].transform.set_position(glm::vec3(20, 1, -5));
 	objects[2].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), 0, 0)));
-	objects[3].transform.set_position(glm::vec3(0, 0, 5));
+	objects[3].transform.set_position(glm::vec3(20, 1, 5));
 	objects[3].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(180.0f), 0)));
-	objects[4].transform.set_position(glm::vec3(-5, 0, 0));
+	objects[4].transform.set_position(glm::vec3(15, 1, 0));
 	objects[4].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(90.0f), 0)));
-	objects[5].transform.set_position(glm::vec3(5, 0, 0));
+	objects[5].transform.set_position(glm::vec3(25, 1, 0));
 	objects[5].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(-90.0f), 0)));
 	objects[6].transform.set_scale(glm::vec3(0.1));
-	objects[6].transform.set_position(glm::vec3(0, 0.9, 0));
+	objects[6].transform.set_position(glm::vec3(20, 1.9, 0));
 	objects[7].transform.set_scale(glm::vec3(0.1));
-	objects[7].transform.set_position(glm::vec3(0, 0.7, 0));
+	objects[7].transform.set_position(glm::vec3(20, 1.7, 0));
 	objects[8].transform.set_scale(glm::vec3(0.1));
-	objects[8].transform.set_position(glm::vec3(0, 0.5, 0));
-	objects[9].transform.set_position(glm::vec3(0, 0, 0));
-	objects[10].transform.set_position(glm::vec3(2, 0, 0));
-	objects[11].transform.set_position(glm::vec3(2, 0, 2));
+	objects[8].transform.set_position(glm::vec3(20, 1.5, 0));
+	objects[9].transform.set_position(glm::vec3(20,  1, 0));
+	objects[10].transform.set_position(glm::vec3(22, 1, 0));
+	objects[11].transform.set_position(glm::vec3(22, 1, 2));
+
+	objects[12].transform.set_position(glm::vec3(0,  0, 0));
+	objects[13].transform.set_position(glm::vec3(0,  0, 0));
+	objects[14].transform.set_position(glm::vec3(0,  0, 0));
+	campfire_fire.transform.set_position(glm::vec3(0, -2, 0));
+
 	for (size_t i = 0; i < objects_len; i++) {
 		object &o = objects[i];
 		if (!o.has_mesh()) continue;
@@ -56,12 +69,25 @@ void mainloop(SDL_Window *window) {
 		m.prepare_to_drawing();
 	}
 	point_lights lights;
-	lights.add(glm::vec3( 0.0f,  2.0f,  0.0f), glm::vec3(0.88, 0.90, 0.75), 5.0f);
-	lights.add(glm::vec3( 3.0f,  2.0f, -3.0f), glm::vec3(0.95, 0.10, 0.15), 5.0f);
-	lights.add(glm::vec3(-3.0f,  2.0f, -3.0f), glm::vec3(0.05, 0.88, 0.12), 5.0f);
-	lights.add(glm::vec3( 3.0f,  2.0f,  3.0f), glm::vec3(0.13, 0.10, 0.80), 5.0f);
-	size_t selected_light = 0;
+	// костёр
+	lights.add(glm::vec3(  0.0f,  1.0f,  0.0f), glm::vec3(1.00, 0.56, 0.05),  0.0f);
+	// тестовая площадка
+	lights.add(glm::vec3( 20.0f,  3.0f,  0.0f), glm::vec3(0.88, 0.90, 0.75),  5.0f);
+	lights.add(glm::vec3( 23.0f,  3.0f, -3.0f), glm::vec3(0.95, 0.10, 0.15),  5.0f);
+	lights.add(glm::vec3( 17.0f,  3.0f, -3.0f), glm::vec3(0.05, 0.88, 0.12),  5.0f);
+	lights.add(glm::vec3( 23.0f,  3.0f,  3.0f), glm::vec3(0.13, 0.10, 0.80),  5.0f);
+	// светлячки/огоньки
+	lights.add(glm::vec3(  5.0f,  3.0f,  1.0f), glm::vec3(0.31, 0.93, 0.11),  0.1f);
+	lights.add(glm::vec3(  2.0f,  2.0f,  4.0f), glm::vec3(0.31, 0.93, 0.11),  0.1f);
+	lights.add(glm::vec3(  1.0f,  3.0f,  1.0f), glm::vec3(0.31, 0.93, 0.11),  0.1f);
+	lights.add(glm::vec3( -1.0f,  3.0f, -5.0f), glm::vec3(0.31, 0.93, 0.11),  0.1f);
+	size_t selected_light = 1;
+	float const campfire_light_max_power = 10.0f;
+	float &campfire_light_current_power = lights.powers[0];
+	bool campfire_lit = false;
 	// end load scene
+	
+	bool freecam = false;
 
 	// init
 	int width, height; float aspectRatio;
@@ -69,7 +95,10 @@ void mainloop(SDL_Window *window) {
 	aspectRatio = (float)width / (float)height;
 
 	std::optional<solid_shader_program> solid0 = solid_shader_program::create("data/shaders/solid.vert", "data/shaders/solid.frag");
-	if (!solid0.has_value()) return;
+	if (!solid0.has_value()) {
+		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Shader load error, aborting\n");
+		return;
+	}
 	solid_shader_program solid = solid0.value();
 	// end init
 	// loop
@@ -78,7 +107,7 @@ void mainloop(SDL_Window *window) {
 
 	player player{};
 	double default_speed = player.speed;
-	double sprint_speed = default_speed * 3.0;
+	double sprint_speed = default_speed * 4.0;
 	bool is_sprinting = false;
 
 	glm::mat4 view;
@@ -125,18 +154,34 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_S: if (!event.key.repeat) player.movement.x -= 1; break;
 					case SDL_SCANCODE_A: if (!event.key.repeat) player.movement.y -= 1; break;
 					case SDL_SCANCODE_D: if (!event.key.repeat) player.movement.y += 1; break;
-					case SDL_SCANCODE_SPACE: if (!event.key.repeat) player.movement.z += 1; break;
-					case SDL_SCANCODE_LSHIFT: if (!event.key.repeat) player.movement.z -= 1; break;
-					case SDL_SCANCODE_1: if (!event.key.repeat) selected_light = 0; break;
-					case SDL_SCANCODE_2: if (!event.key.repeat) selected_light = 1; break;
-					case SDL_SCANCODE_3: if (!event.key.repeat) selected_light = 2; break;
-					case SDL_SCANCODE_4: if (!event.key.repeat) selected_light = 3; break;
+					case SDL_SCANCODE_SPACE: if (!event.key.repeat && freecam) player.movement.z += 1; break;
+					case SDL_SCANCODE_LSHIFT: if (!event.key.repeat && freecam) player.movement.z -= 1; break;
+					case SDL_SCANCODE_1: if (!event.key.repeat) selected_light = 1; break;
+					case SDL_SCANCODE_2: if (!event.key.repeat) selected_light = 2; break;
+					case SDL_SCANCODE_3: if (!event.key.repeat) selected_light = 3; break;
+					case SDL_SCANCODE_4: if (!event.key.repeat) selected_light = 4; break;
 					case SDL_SCANCODE_LEFT: lights.positions_w[selected_light].x += 0.1; break;
 					case SDL_SCANCODE_RIGHT: lights.positions_w[selected_light].x -= 0.1; break;
 					case SDL_SCANCODE_UP: lights.positions_w[selected_light].z += 0.1; break;
 					case SDL_SCANCODE_DOWN: lights.positions_w[selected_light].z -= 0.1; break;
 					case SDL_SCANCODE_EQUALS: lights.positions_w[selected_light].y += 0.1; break;
 					case SDL_SCANCODE_MINUS: lights.positions_w[selected_light].y -= 0.1; break;
+					case SDL_SCANCODE_E: if (!event.key.repeat) {
+						campfire_lit = !campfire_lit;
+						if (campfire_lit) {
+							campfire_light_current_power = campfire_light_max_power;
+							campfire_fire.transform.set_position(glm::vec3(0, 0, 0));
+						}
+						else {
+							campfire_light_current_power = 0.0f;
+							campfire_fire.transform.set_position(glm::vec3(0, -2, 0));
+						}
+					} break;
+					case SDL_SCANCODE_P: if (!event.key.repeat) {
+						freecam = !freecam;
+						if (!freecam) {player.position.y = 2;}
+						player.movement.y = 0;
+					} break;
 					case SDL_SCANCODE_H: lights.powers[selected_light] -= 0.1; break;
 					case SDL_SCANCODE_J: lights.powers[selected_light] += 0.1; break;
 					case SDL_SCANCODE_TAB: if (!event.key.repeat) {
@@ -156,8 +201,8 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_S: player.movement.x += 1; break;
 					case SDL_SCANCODE_A: player.movement.y += 1; break;
 					case SDL_SCANCODE_D: player.movement.y -= 1; break;
-					case SDL_SCANCODE_SPACE: player.movement.z -= 1; break;
-					case SDL_SCANCODE_LSHIFT: player.movement.z += 1; break;
+					case SDL_SCANCODE_SPACE: if (freecam) player.movement.z -= 1; break;
+					case SDL_SCANCODE_LSHIFT: if (freecam) player.movement.z += 1; break;
 				}
 			} break;
 			case SDL_MOUSEMOTION: if (captured) {

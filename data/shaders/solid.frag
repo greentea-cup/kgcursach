@@ -32,11 +32,10 @@ vec3 calc_light(
 	float diff = max(dot(normal, light_dir_mv), 0.);
 	float spec = pow(max(dot(normal, halfway_dir_mv), 0.), 32.0);
 
-	vec3 ambient = material_ambient;
 	vec3 diffuse = material_diffuse * diff * light_mult;
 	vec3 specular = material_specular * spec * light_mult;
 
-	return ambient + diffuse + specular;
+	return diffuse + specular;
 }
 
 void main() {
@@ -44,7 +43,7 @@ void main() {
 
 	if (has_diffuse_map) material_diffuse = texture(diffuse_map, uv).rgb;
 	else material_diffuse = diffuse_color;
-	material_ambient = vec3(0.05) * material_diffuse;
+	material_ambient = vec3(0.15) * material_diffuse;
 	material_specular = vec3(0.3);
 	if (has_normal_map)
 		normal = normalize(TBN*((texture(normal_map, uv).rgb)*2.-1.));
@@ -59,6 +58,7 @@ void main() {
 			i, frag_pos_mv, view_dir_mv, normal,
 			material_ambient, material_diffuse, material_specular);
 	}
+	res_color += material_ambient;
 
 	// res_color = normal;
 	color = vec4(res_color, 1.);

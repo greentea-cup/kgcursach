@@ -1,7 +1,7 @@
-# Blender 4.4.3 MTL File: 'dungeon_wall.blend'
+# Blender 4.4.3 MTL File: 'dungeon_2.blend'
 # www.blender.org
 
-newmtl Wall
+newmtl Dungeon
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
 Ks 0.500000 0.500000 0.500000
