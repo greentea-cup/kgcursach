@@ -30,32 +30,34 @@ void mainloop(SDL_Window *window) {
 	};
 	object &campfire_fire = objects[15];
 	size_t objects_len = sizeof(objects) / sizeof(*objects);
-	objects[0].transform.set_position(glm::vec3(20, 1, 0));
-	objects[0].transform.set_scale(glm::vec3(0.1));
-	objects[1].transform.set_position(glm::vec3(20, 0, 0));
-	objects[1].transform.set_scale(glm::vec3(10));
-	objects[2].transform.set_position(glm::vec3(20, 1, -5));
-	objects[2].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), 0, 0)));
-	objects[3].transform.set_position(glm::vec3(20, 1, 5));
-	objects[3].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(180.0f), 0)));
-	objects[4].transform.set_position(glm::vec3(15, 1, 0));
-	objects[4].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(90.0f), 0)));
-	objects[5].transform.set_position(glm::vec3(25, 1, 0));
-	objects[5].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(-90.0f), 0)));
-	objects[6].transform.set_scale(glm::vec3(0.1));
-	objects[6].transform.set_position(glm::vec3(20, 1.9, 0));
-	objects[7].transform.set_scale(glm::vec3(0.1));
-	objects[7].transform.set_position(glm::vec3(20, 1.7, 0));
-	objects[8].transform.set_scale(glm::vec3(0.1));
-	objects[8].transform.set_position(glm::vec3(20, 1.5, 0));
-	objects[9].transform.set_position(glm::vec3(20,  1, 0));
-	objects[10].transform.set_position(glm::vec3(22, 1, 0));
-	objects[11].transform.set_position(glm::vec3(22, 1, 2));
+	objects[0].transform.set_position(glm::vec3(20.0f, 1.0f, 0.0f));
+	objects[0].transform.set_scale(glm::vec3(0.1f));
+	objects[1].transform.set_position(glm::vec3(20.0f, 0.0f, 0.0f));
+	objects[1].transform.set_scale(glm::vec3(10.0f));
+	objects[2].transform.set_position(glm::vec3(20.0f, 1.0f, -5.0f));
+	objects[2].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), 0.0f, 0.0f)));
+	objects[3].transform.set_position(glm::vec3(20.0f, 1.0f, 5.0f));
+	objects[3].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(180.0f), 0.0f)));
+	objects[4].transform.set_position(glm::vec3(15.0f, 1.0f, 0.0f));
+	objects[4].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(90.0f), 0.0f)));
+	objects[5].transform.set_position(glm::vec3(25.0f, 1.0f, 0.0f));
+	objects[5].transform.set_rotation(glm::quat(glm::vec3(glm::radians(90.0f), glm::radians(-90.0f), 0.0f)));
+	objects[6].transform.set_scale(glm::vec3(0.1f));
+	objects[6].transform.set_position(glm::vec3(20.0f, 1.9f, 0.0f));
+	objects[7].transform.set_scale(glm::vec3(0.1f));
+	objects[7].transform.set_position(glm::vec3(20.0f, 1.7f, 0.0f));
+	objects[8].transform.set_scale(glm::vec3(0.1f));
+	objects[8].transform.set_position(glm::vec3(20.0f, 1.5f, 0.0f));
+	objects[9].transform.set_position(glm::vec3(20.0f,  1.0f, 0.0f));
+	objects[10].transform.set_position(glm::vec3(22.0f, 1.0f, 0.0f));
+	objects[11].transform.set_position(glm::vec3(22.0f, 1.0f, 2.0f));
 
-	objects[12].transform.set_position(glm::vec3(0,  0, 0));
-	objects[13].transform.set_position(glm::vec3(0,  0, 0));
-	objects[14].transform.set_position(glm::vec3(0,  0, 0));
-	campfire_fire.transform.set_position(glm::vec3(0, -2, 0));
+	objects[12].transform.set_position(glm::vec3(0.0f,  0.0f, 0.0f));
+	objects[13].transform.set_position(glm::vec3(0.0f,  0.0f, 0.0f));
+	objects[14].transform.set_position(glm::vec3(0.0f,  0.0f, 0.0f));
+	campfire_fire.transform.set_position(glm::vec3(0.0f, -2.0f, 0.0f));
+
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Objects loaded");
 
 	for (size_t i = 0; i < objects_len; i++) {
 		object &o = objects[i];
@@ -68,6 +70,9 @@ void mainloop(SDL_Window *window) {
 		}
 		m.prepare_to_drawing();
 	}
+
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Objects prepared to drawing");
+
 	point_lights lights;
 	// костёр
 	lights.add(glm::vec3(  0.0f,  1.0f,  0.0f), glm::vec3(1.00, 0.56, 0.05),  0.0f);
@@ -87,6 +92,8 @@ void mainloop(SDL_Window *window) {
 	bool campfire_lit = false;
 	// end load scene
 	
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Lights loaded");
+
 	bool freecam = false;
 
 	// init
@@ -105,9 +112,11 @@ void mainloop(SDL_Window *window) {
 	SDL_Event event;
 	bool running = true, captured = true;
 
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Shaders loaded");
+
 	player player{};
-	double default_speed = player.speed;
-	double sprint_speed = default_speed * 4.0;
+	float default_speed = player.speed;
+	float sprint_speed = default_speed * 4.0f;
 	bool is_sprinting = false;
 
 	glm::mat4 view;
@@ -116,10 +125,11 @@ void mainloop(SDL_Window *window) {
 	Uint64 time_last, time_now; float delta_time;
 	time_last = SDL_GetTicks64();
 	char window_title[256];
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Started running");
 	while (running) {
 		{ /* delta_time */
 			time_now = SDL_GetTicks64(); // in ms
-			delta_time = (time_now - time_last) * 0.001; // ms to s
+			delta_time = (time_now - time_last) * 0.001f; // ms to s
 			time_last = time_now;
 		}
 		while (SDL_PollEvent(&event)) switch (event.type) {
@@ -160,12 +170,12 @@ void mainloop(SDL_Window *window) {
 					case SDL_SCANCODE_2: if (!event.key.repeat) selected_light = 2; break;
 					case SDL_SCANCODE_3: if (!event.key.repeat) selected_light = 3; break;
 					case SDL_SCANCODE_4: if (!event.key.repeat) selected_light = 4; break;
-					case SDL_SCANCODE_LEFT: lights.positions_w[selected_light].x += 0.1; break;
-					case SDL_SCANCODE_RIGHT: lights.positions_w[selected_light].x -= 0.1; break;
-					case SDL_SCANCODE_UP: lights.positions_w[selected_light].z += 0.1; break;
-					case SDL_SCANCODE_DOWN: lights.positions_w[selected_light].z -= 0.1; break;
-					case SDL_SCANCODE_EQUALS: lights.positions_w[selected_light].y += 0.1; break;
-					case SDL_SCANCODE_MINUS: lights.positions_w[selected_light].y -= 0.1; break;
+					case SDL_SCANCODE_LEFT: lights.positions_w[selected_light].x += 0.1f; break;
+					case SDL_SCANCODE_RIGHT: lights.positions_w[selected_light].x -= 0.1f; break;
+					case SDL_SCANCODE_UP: lights.positions_w[selected_light].z += 0.1f; break;
+					case SDL_SCANCODE_DOWN: lights.positions_w[selected_light].z -= 0.1f; break;
+					case SDL_SCANCODE_EQUALS: lights.positions_w[selected_light].y += 0.1f; break;
+					case SDL_SCANCODE_MINUS: lights.positions_w[selected_light].y -= 0.1f; break;
 					case SDL_SCANCODE_E: if (!event.key.repeat) {
 						campfire_lit = !campfire_lit;
 						if (campfire_lit) {
@@ -182,8 +192,8 @@ void mainloop(SDL_Window *window) {
 						if (!freecam) {player.position.y = 2;}
 						player.movement.y = 0;
 					} break;
-					case SDL_SCANCODE_H: lights.powers[selected_light] -= 0.1; break;
-					case SDL_SCANCODE_J: lights.powers[selected_light] += 0.1; break;
+					case SDL_SCANCODE_H: lights.powers[selected_light] -= 0.1f; break;
+					case SDL_SCANCODE_J: lights.powers[selected_light] += 0.1f; break;
 					case SDL_SCANCODE_TAB: if (!event.key.repeat) {
 						is_sprinting = !is_sprinting;
 						player.speed = is_sprinting ? sprint_speed : default_speed;
@@ -206,8 +216,8 @@ void mainloop(SDL_Window *window) {
 				}
 			} break;
 			case SDL_MOUSEMOTION: if (captured) {
-				float dx = event.motion.xrel;
-				float dy = -event.motion.yrel; // change y direction
+				float dx = (float)event.motion.xrel;
+				float dy = (float)-event.motion.yrel; // change y direction
 				player.rotate_camera(dx, dy);
 			} break;
 			case SDL_DROPFILE: {
@@ -244,7 +254,7 @@ void mainloop(SDL_Window *window) {
 		// glDisable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		glClearColor(0.7, 0.7, 0.9, 1.0);
+		glClearColor(0.7f, 0.7f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// glClear(GL_DEPTH_BUFFER_BIT);
 		
@@ -266,12 +276,13 @@ void mainloop(SDL_Window *window) {
 			solid.set_lights(lights);
 			solid.set_material(mm);
 			glBindVertexArray(m.vao);
-			glDrawArrays(GL_TRIANGLES, 0, m.size());
+			glDrawArrays(GL_TRIANGLES, 0, (GLsizei)m.size());
 		}
 
 		// todo: ограничение кадов
 		SDL_GL_SwapWindow(window);
 		// SDL_Delay(Uint32 ms); delay after swap
+		SDL_Delay(10);
 	}
 	// end loop
 }

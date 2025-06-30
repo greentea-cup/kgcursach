@@ -1,10 +1,6 @@
 CC = gcc
 CXX = g++
-# CFLAGS = -O2 -Wall -Wextra -Werror -DNDEBUG -std=c11
-CFLAGS =
-GPPFLAGS =
 CXXFLAGS = -O2 -Wall -Wextra -Werror -DNDEBUG -std=c++17
-LDFLAGS =
 LDLIBS = -lm -lSDL2 -lGL -lGLEW
 
 CXXFLAGS += -isystem /usr/include/SDL2

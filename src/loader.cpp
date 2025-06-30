@@ -143,11 +143,11 @@ void register_mesh(char const *object_resource) {
 			ssize_t len = (ssize_t)strlen(line);
 			char const *l = line + 2;
 			while (l - line < len) {
-				uint x = 0; while (l[x] != ' ' && l[x] != '\n' && l[x] != '\0') x++;
+				unsigned int x = 0; while (l[x] != ' ' && l[x] != '\n' && l[x] != '\0') x++;
 				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "entry len %u (%.*s)\n", x, x, l);
 				if (x == 0) break;
-				uint y1 = 0; while (l[y1] != '/') y1++;
-				uint y2 = y1 + 1; while (l[y2] != '/') y2++;
+				unsigned int y1 = 0; while (l[y1] != '/') y1++;
+				unsigned int y2 = y1 + 1; while (l[y2] != '/') y2++;
 				SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, "entry splits at %u %u\n", y1, y2);
 				size_t v = 1, vt = 1, vn = 0;
 				(void)sscanf(l, "%zu", &v);
@@ -209,6 +209,7 @@ void register_mesh(char const *object_resource) {
 	// probably better do this than just override
 	if (it != meshes.end()) meshes.erase(it);
 	meshes.insert(it, {objname, std::move(res)});
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Finished loading object %s\n", objname.c_str());
 }
 
 void register_materials(char const *material_lib_resource) {

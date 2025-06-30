@@ -1,5 +1,6 @@
 // vim: set fdm=indent :
 #include <GL/glew.h>
+#include <SDL2/SDL_log.h>
 #include "object.hpp"
 #include "registry.hpp"
 
@@ -35,6 +36,7 @@ void mesh::gen_tbn() {
 }
 
 bool mesh::prepare_to_drawing() {
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Preparing mesh '%s'\n", this->name.c_str());
 	if (vao == 0) {
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vertices_buf);
@@ -49,6 +51,7 @@ bool mesh::prepare_to_drawing() {
 		if (normals_buf != 0) glDeleteBuffers(1, &normals_buf);
 		if (tangents_buf != 0) glDeleteBuffers(1, &tangents_buf);
 		vao = vertices_buf = uvs_buf = normals_buf = tangents_buf = 0;
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "mesh::prepare_to_drawing: Failed to initialize opengl buffers\n");
 		return false;
 	}
 	if (tangents.empty()) gen_tbn();
@@ -76,5 +79,6 @@ bool mesh::prepare_to_drawing() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Finished preparing mesh '%s'\n", this->name.c_str());
 	return true;
 }

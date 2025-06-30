@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_APPLICATION, "Failed to create OpenGL context: %s\n", SDL_GetError());
 		SDL_DestroyWindow(window);
 		SDL_Quit();
+		return -1;
 	}
 	{
 		GLenum glewErr = glewInit();
@@ -47,7 +48,18 @@ int main(int argc, char **argv) {
 			SDL_GL_DeleteContext(context);
 			SDL_DestroyWindow(window);
 			SDL_Quit();
+			return -1;
 		}
+	}
+	{
+		GLubyte const *gl_vendor = glGetString(GL_VENDOR);
+		GLubyte const *gl_renderer = glGetString(GL_RENDERER);
+		GLubyte const *gl_version = glGetString(GL_VERSION);
+		SDL_LogDebug(
+			SDL_LOG_CATEGORY_APPLICATION,
+			"GL vendor: %s\nGL renderer: %s\nGL version: %s\n",
+			gl_vendor, gl_renderer, gl_version
+		);
 	}
 
 	// Adaptive VSync
