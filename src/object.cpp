@@ -36,7 +36,7 @@ void mesh::gen_tbn() {
 }
 
 bool mesh::prepare_to_drawing() {
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Preparing mesh '%s'\n", this->name.c_str());
+	// SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Preparing mesh '%s'\n", this->name.c_str());
 	if (vao == 0) {
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vertices_buf);
@@ -79,6 +79,6 @@ bool mesh::prepare_to_drawing() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Finished preparing mesh '%s'\n", this->name.c_str());
+	// SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Finished preparing mesh '%s'\n", this->name.c_str());
 	return true;
 }

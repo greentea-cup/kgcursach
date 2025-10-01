@@ -89,7 +89,8 @@ void mainloop(SDL_Window *window) {
 	size_t selected_light = 1;
 	float const campfire_light_max_power = 10.0f;
 	float &campfire_light_current_power = lights.powers[0];
-	bool campfire_lit = false;
+	bool campfire_lit = true;
+	campfire_light_current_power = campfire_light_max_power;
 	// end load scene
 	
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Lights loaded");
@@ -126,6 +127,7 @@ void mainloop(SDL_Window *window) {
 	time_last = SDL_GetTicks64();
 	char window_title[256];
 	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Started running");
+	SDL_GL_SetSwapInterval(1);
 	while (running) {
 		{ /* delta_time */
 			time_now = SDL_GetTicks64(); // in ms
@@ -282,7 +284,7 @@ void mainloop(SDL_Window *window) {
 		// todo: ограничение кадов
 		SDL_GL_SwapWindow(window);
 		// SDL_Delay(Uint32 ms); delay after swap
-		SDL_Delay(10);
+		// SDL_Delay(1000);
 	}
 	// end loop
 }
